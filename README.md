@@ -720,19 +720,7 @@ for each photo in validatedPhotos:
     finalComposition.add(composedPhoto)
 ```
 
----
-
-## 8.3 Layout final possible
-
-### Option 1 : Style BD vertical
-- 3 images empilées
-
-### Option 2 : Story Instagram
-- 3 slides
-
-### Option 3 : Image unique 3 panneaux
-
----
+--- 
 
 #  9. Export
 
@@ -742,8 +730,6 @@ for each photo in validatedPhotos:
 
 - JPG HD
 - PNG
-- PDF
-- MP4 animé
 
 ---
 
@@ -789,12 +775,7 @@ export(finalComposition, format="JPG", quality=100%)
 
 #  Perspective d'évolution
 
-
-
-
-
-
-
+---
 
 # Résultat attendu
 ### Les photo prisent par le SAV
