@@ -230,6 +230,7 @@ L’application repose sur une machine à états claire, indispensable pour :
   |--(pouce baissé 2s)--> reset complet -> [CAPTURE_1]
 
 ```
+
 ---
 
 ## Principes d’implémentation
@@ -249,7 +250,7 @@ Les états CAPTURE_X ne durent qu’une frame :
 - passage immédiat à PREVIEW_X  
 
 ### Détection de gestes 
-Dépendances  
+Dépendances:  
 - mediapipe (Hands)  
 - opencv-python (capture caméra)  
 - numpy  
@@ -272,107 +273,97 @@ Paramètres recommandés :
 - FPS_ESTIME = 30  
 - MAX_MISSED_FRAMES = 2  
 
+---
+
 ## Capture & affichage
-Capture
+### Capture
 - OpenCV VideoCapture(0)
 - résolution recommandée : 1280×720
 - format BGR (OpenCV) converti en RGB uniquement si nécessaire (Pillow / MediaPipe)
 
-Affichage minimaliste  
+### Affichage minimaliste  
 - fenêtre plein écran “Camera” pendant IDLE / capture  
 - fenêtre plein écran “Preview” pendant PREVIEW_X  
 - fenêtre plein écran “Result” pendant DISPLAY_RESULT  
 - Le seul “feedback” est le changement de mode d’affichage (caméra vs preview vs résultat).  
 
-### Pipeline IA (vue globale)
+---
+
+## Pipeline IA (vue globale)
 
 Le module IA doit transformer chaque input_X.png en panel_X.png avec un style cohérent.
 
-Principe
+### Principe
 
-3 requêtes img2img (une par panel)
+- 3 requêtes img2img (une par panel)  
+- paramètres identiques (prompt / negative prompt / sampler / steps / cfg)  
+- seed gérée pour cohérence (voir étape 3)  
+- ControlNet OpenPose pour conserver posture/structure  
 
-paramètres identiques (prompt / negative prompt / sampler / steps / cfg)
+### Découplage recommandé
 
-seed gérée pour cohérence (voir étape 3)
+- L’application photobooth ne charge pas SDXL  
 
-ControlNet OpenPose pour conserver posture/structure
+Elle appelle l’API d’Automatic1111 via HTTP :  
+- plus stable  
+- redémarrable  
+- logs séparés  
 
-Découplage recommandé
+---
 
-L’application photobooth ne charge pas SDXL
-
-Elle appelle l’API d’Automatic1111 via HTTP :
-
-plus stable
-
-redémarrable
-
-logs séparés
-
-### Placement adaptatif des bulles (vue architecture)
+## Placement adaptatif des bulles (vue architecture)
 
 Après génération IA des panels, on ajoute des bulles en fonction des personnes présentes.
 
-Entrées
+### Entrées
 
-panel_X.png (image IA)
+- panel_X.png (image IA)  
+- histoire choisie : stories.json (texte fixe)  
+- style bulles : bubble_style.yaml  
 
-histoire choisie : stories.json (texte fixe)
+### Étapes
 
-style bulles : bubble_style.yaml
+1°) Détecter la/les personnes sur panel_X.png :  
+- MediaPipe Pose (option Face)  
 
-Étapes
+2°) Convertir landmarks -> bounding boxes “zones à éviter”
 
-Détecter la/les personnes sur panel_X.png :
+3°) Générer des rectangles de bulles (selon texte + police)
 
-MediaPipe Pose (option Face)
+4°) Tester plusieurs positions candidates
 
-Convertir landmarks -> bounding boxes “zones à éviter”
+5°) Choisir la meilleure (score minimum)
 
-Générer des rectangles de bulles (selon texte + police)
+6°) Dessiner bulle + contour + queue + texte via Pillow
 
-Tester plusieurs positions candidates
+7°) Export : panel_X_bubbled.png
 
-Choisir la meilleure (score minimum)
+---
 
-Dessiner bulle + contour + queue + texte via Pillow
-
-Export : panel_X_bubbled.png
-
-### Composition de la planche BD
+## Composition de la planche BD
 
 Le module “Composer” assemble les 3 panels “bubbled” dans une planche finale.
 
-Entrées
+### Entrées
 
-panel_1_bubbled.png
+- panel_1_bubbled.png  
+- panel_2_bubbled.png  
+- panel_3_bubbled.png  
+- titre (depuis l’histoire choisie)  
 
-panel_2_bubbled.png
+### Sorties
 
-panel_3_bubbled.png
+- comic_final.png  
+- optionnel : comic_final.pdf  
 
-titre (depuis l’histoire choisie)
+### Layout recommandé (simple)
 
-Sorties
+- 3 panels alignés horizontalement (ou vertical selon imprimante)  
+- marges externes + gouttière entre cases  
+- titre en haut  
+- Tous les paramètres (taille, marges) doivent être configurables.  
 
-comic_final.png
-
-optionnel : comic_final.pdf
-
-Layout recommandé (simple)
-
-3 panels alignés horizontalement (ou vertical selon imprimante)
-
-marges externes + gouttière entre cases
-
-titre en haut
-
-Tous les paramètres (taille, marges) doivent être configurables.
-
-
-
-
+---
 
 ## Logs & traçabilité
 
