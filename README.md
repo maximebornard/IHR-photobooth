@@ -367,7 +367,7 @@ Le module “Composer” assemble les 3 panels “bubbled” dans une planche fi
 
 ## Logs & traçabilité
 
-Chaque session doit écrire un metadata.json contenant :  
+Chaque session doit écrire un metadata.json contenant :
 - timestamp session  
 - histoire choisie (id + titre)  
 - chemins des images input/panel/final  
@@ -375,7 +375,7 @@ Chaque session doit écrire un metadata.json contenant :
 - paramètres SDXL (steps, cfg, denoise, sampler, model)  
 - paramètres bulles (font, size, positions retenues)  
  
-C’est indispensable pour :  
+C’est indispensable pour :
 - reproduire un bug  
 - comparer des réglages IA  
 - auditer la cohérence des sorties  
