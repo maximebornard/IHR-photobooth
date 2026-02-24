@@ -1,6 +1,7 @@
 # TODO
 - Revérifier le tout (enlever ce qui se répète) et faire conclusion + perspective
 - Faire storyboard/storytime (dessins bien bg)
+- Rajouter la partie avec le temps qu'il faudrait pour réaliser le projet
 
 #  Photo Booth IA - Mode Histoire (Mini BD en 3 cases)
 
