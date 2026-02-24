@@ -9,6 +9,15 @@
 PhotoBooth interactif contrôlé **uniquement par gestes** qui capture **3 photos successives**, applique une transformation IA cohérente pour obtenir un rendu “bande dessinée”, puis génère une **planche BD finale** avec **bulles de texte**.  
 Le but est de transformer une séance photobooth classique en une **mini-histoire en 3 scènes** (début → action → fin), rendue comme une vraie BD.  
 
+## Objectifs du projet
+
+- Créer une **expérience narrative** simple, fun, et répétable.
+- Proposer un rendu final “collector” (planche BD) plutôt qu’une image unique.
+- Assurer la cohérence stylistique des 3 panels.
+- Placer des bulles de texte **sans masquer les personnes**.
+
+---
+
 ## Fonctionnalités principales
 
 ### 1) Interaction 100% gestuelle (sans overlay)
@@ -16,9 +25,9 @@ Le système n’utilise **aucun overlay** (pas de cadre, pas de zones, pas d’a
 L’interface est minimale : affichage plein écran du flux caméra, puis des captures, puis du résultat final.
 
 Gestes utilisés (maintien ~2 secondes) :
-- ✌️ **Signe V** : déclencher la capture de la photo courante
-- 👍 **Pouce vers le haut** : valider la photo et passer à la suivante
-- 👎 **Pouce vers le bas** : rejeter la photo et la reprendre
+- **Signe V** : déclencher la capture de la photo courante
+- **Pouce vers le haut** : valider la photo et passer à la suivante
+- **Pouce vers le bas** : rejeter la photo et la reprendre
 
 ### 2) Séquence “Histoire” en 3 photos
 Le photobooth capture et valide 3 photos successives :
@@ -55,17 +64,17 @@ dans une seule image finale prête à afficher et à imprimer/exporter.
 ## Parcours utilisateur (expérience)
 
 1. **Écran caméra** (plein écran)
-2. ✌️ (2s) → Capture Photo 1
+2. **Signe V** (2s) → Capture Photo 1
 3. **Écran preview Photo 1**
-   - 👍 (2s) → valider et passer à Photo 2
-   - 👎 (2s) → refaire Photo 1
+   - **Pouce vers le haut** (2s) → valider et passer à Photo 2
+   - **Pouce vers le bas** (2s) → refaire Photo 1
 4. Idem pour Photo 2
 5. Idem pour Photo 3
 6. **Traitement IA** (génération des 3 panels)
 7. Ajout des **bulles adaptatives**
 8. Assemblage et affichage de la **planche BD finale**
-9. 👍 (2s) → nouvelle session  
-   👎 (2s) → recommencer la séquence complète
+9. **Pouce vers le haut** (2s) → impression puis nouvelle session  
+   **Pouce vers le bas** (2s) → recommencer la séquence complète
 
 ---
 
@@ -93,14 +102,7 @@ Le photobooth produit au minimum :
 
 ---
 
-## Objectifs du projet
 
-- Créer une **expérience narrative** simple, fun, et répétable.
-- Proposer un rendu final “collector” (planche BD) plutôt qu’une image unique.
-- Assurer la cohérence stylistique des 3 panels.
-- Placer des bulles de texte **sans masquer les personnes**.
-
----
 
 
 
