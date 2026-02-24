@@ -4,9 +4,144 @@
 - estimation du temps que ça doit prendre
 - explication des choix (IA, programmes)
 
-#  Photo Booth IA - MDM 2025
+#  Photo Booth IA - Mode Histoire (Mini BD en 3 cases)
 
-Photo booth intelligent avec génération d'images par IA utilisant Stable Diffusion XL et détection de gestes en temps réel.
+PhotoBooth interactif contrôlé **uniquement par gestes** qui capture **3 photos successives**, applique une transformation IA cohérente pour obtenir un rendu “bande dessinée”, puis génère une **planche BD finale** avec **bulles de texte**.  
+Le but est de transformer une séance photobooth classique en une **mini-histoire en 3 scènes** (début → action → fin), rendue comme une vraie BD.  
+
+## Fonctionnalités principales
+
+### 1) Interaction 100% gestuelle (sans overlay)
+Le système n’utilise **aucun overlay** (pas de cadre, pas de zones, pas d’aide visuelle).
+L’interface est minimale : affichage plein écran du flux caméra, puis des captures, puis du résultat final.
+
+Gestes utilisés (maintien ~2 secondes) :
+- ✌️ **Signe V** : déclencher la capture de la photo courante
+- 👍 **Pouce vers le haut** : valider la photo et passer à la suivante
+- 👎 **Pouce vers le bas** : rejeter la photo et la reprendre
+
+### 2) Séquence “Histoire” en 3 photos
+Le photobooth capture et valide 3 photos successives :
+- Photo 1 → Panel 1 (début)
+- Photo 2 → Panel 2 (action)
+- Photo 3 → Panel 3 (fin)
+
+L’utilisateur peut refaire une photo tant qu’elle n’est pas validée.
+
+### 3) Génération IA cohérente (3 panels)
+Une fois les 3 photos validées, l’IA applique un style BD **cohérent entre les 3 images** :
+- mêmes paramètres de génération
+- cohérence stylistique (palette, traits, ambiance)
+- cohérence globale (même “univers” sur les 3 panels)
+
+### 4) Bulles de texte (histoires fixes) + placement adaptatif
+La planche finale contient des **bulles de texte** pour renforcer l’effet BD.
+
+- Le texte provient de **4 à 5 histoires fixes** (templates) stockées dans un fichier de configuration.
+- Le **placement des bulles s’adapte automatiquement** à la position des personnes sur chaque photo :
+  - on détecte les personnes (MediaPipe Pose, optionnel Face)
+  - on évite de recouvrir visages et corps
+  - on choisit une zone “libre” parmi des positions candidates (coins / centres)
+
+### 5) Composition automatique de la planche BD
+Le système assemble :
+- les 3 panels stylisés
+- les bulles
+- un **titre** (lié à l’histoire choisie)
+dans une seule image finale prête à afficher et à imprimer/exporter.
+
+---
+
+## Parcours utilisateur (expérience)
+
+1. **Écran caméra** (plein écran)
+2. ✌️ (2s) → Capture Photo 1
+3. **Écran preview Photo 1**
+   - 👍 (2s) → valider et passer à Photo 2
+   - 👎 (2s) → refaire Photo 1
+4. Idem pour Photo 2
+5. Idem pour Photo 3
+6. **Traitement IA** (génération des 3 panels)
+7. Ajout des **bulles adaptatives**
+8. Assemblage et affichage de la **planche BD finale**
+9. 👍 (2s) → nouvelle session  
+   👎 (2s) → recommencer la séquence complète
+
+---
+
+## Fichiers générés (sorties)
+
+Le photobooth produit au minimum :
+
+- `outputs/session_YYYYMMDD_HHMMSS/`
+  - `inputs/`
+    - `input_1.png`
+    - `input_2.png`
+    - `input_3.png`
+  - `ai/`
+    - `panel_1.png`
+    - `panel_2.png`
+    - `panel_3.png`
+  - `bubbles/`
+    - `panel_1_bubbled.png`
+    - `panel_2_bubbled.png`
+    - `panel_3_bubbled.png`
+  - `final/`
+    - `comic_final.png`
+    - *(optionnel)* `comic_final.pdf`
+  - `metadata.json` (histoire choisie, seed, paramètres, timestamps)
+
+---
+
+## Objectifs du projet
+
+- Créer une **expérience narrative** simple, fun, et répétable.
+- Proposer un rendu final “collector” (planche BD) plutôt qu’une image unique.
+- Assurer la cohérence stylistique des 3 panels.
+- Placer des bulles de texte **sans masquer les personnes**.
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Version d'origine du prof
+
+PhotoBooth interactif basé sur la détection de gestes qui capture **3 photos successives**, puis applique une génération IA cohérente afin de produire une **mini bande dessinée en 3 cases**.
 
 ##  Description
 
