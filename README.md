@@ -211,23 +211,23 @@ L’application repose sur une machine à états claire, indispensable pour :
 ```text
 [IDLE]
   |
-  | (V ✌️ maintenu 2s)
+  | (signe V  maintenu 2s)
   v
 [CAPTURE_1] -> [PREVIEW_1]
-                 |--(👍 2s)--> [CAPTURE_2] -> [PREVIEW_2]
-                 |--(👎 2s)--> [CAPTURE_1]
+                 |--(pouce levé 2s)--> [CAPTURE_2] -> [PREVIEW_2]
+                 |--(pouce baissé 2s)--> [CAPTURE_1]
 
 [PREVIEW_2]
-  |--(👍 2s)--> [CAPTURE_3] -> [PREVIEW_3]
-  |--(👎 2s)--> [CAPTURE_2]
+  |--(pouce levé 2s)--> [CAPTURE_3] -> [PREVIEW_3]
+  |--(pouce baissé 2s)--> [CAPTURE_2]
 
 [PREVIEW_3]
-  |--(👍 2s)--> [PROCESSING] -> [DISPLAY_RESULT]
-  |--(👎 2s)--> [CAPTURE_3]
+  |--(pouce levé 2s)--> [PROCESSING] -> [DISPLAY_RESULT]
+  |--(pouce baissé 2s)--> [CAPTURE_3]
 
 [DISPLAY_RESULT]
-  |--(👍 2s)--> retour [IDLE] (nouvelle session)
-  |--(👎 2s)--> reset complet -> [CAPTURE_1]
+  |--(pouce levé 2s)--> retour [IDLE] (nouvelle session)
+  |--(pouce baissé 2s)--> reset complet -> [CAPTURE_1]
 
 ```
 ---
@@ -237,70 +237,52 @@ L’application repose sur une machine à états claire, indispensable pour :
 Boucle principale à ~30 FPS (dépend webcam)  
 
 À chaque frame :  
-lire frame caméra  
-
-détecter geste  
-
-mettre à jour un timer de “maintien”  
-
-valider geste si tenu ≥ 2s  
-
-appliquer transition d’état  
+- lire frame caméra  
+- détecter geste  
+- mettre à jour un timer de “maintien”  
+- valider geste si tenu ≥ 2s  
+- appliquer transition d’état  
 
 Les états CAPTURE_X ne durent qu’une frame :  
-
-capture instantanée  
-
-écriture sur disque  
-
-passage immédiat à PREVIEW_X  
+- capture instantanée  
+- écriture sur disque  
+- passage immédiat à PREVIEW_X  
 
 ### Détection de gestes 
-Dépendances
+Dépendances  
 - mediapipe (Hands)  
 - opencv-python (capture caméra)  
 - numpy  
 
 Validation par maintien (~2 secondes)  
 
-La détection brute varie frame-to-frame. On impose donc une règle :
+La détection brute varie frame-to-frame. On impose donc une règle :  
 
-Un geste est “validé” si :
-
+Un geste est “validé” si :  
 - il est détecté consécutivement pendant HOLD_TIME_SEC (ex: 2.0s)  
 - avec une tolérance d’erreur faible (ex: 2 frames max manquées)  
 
-Pseudo-logique :
-
-- si geste courant == geste précédent : incrémenter compteur
-- sinon : reset compteur
-- valider quand compteur >= HOLD_TIME_SEC * FPS_ESTIME
+Pseudo-logique :  
+- si geste courant == geste précédent : incrémenter compteur  
+- sinon : reset compteur  
+- valider quand compteur >= HOLD_TIME_SEC * FPS_ESTIME  
 
 Paramètres recommandés :
-- HOLD_TIME_SEC = 2.0
-
-- FPS_ESTIME = 30
-
-- MAX_MISSED_FRAMES = 2
+- HOLD_TIME_SEC = 2.0  
+- FPS_ESTIME = 30  
+- MAX_MISSED_FRAMES = 2  
 
 ## Capture & affichage
 Capture
-
 - OpenCV VideoCapture(0)
-
 - résolution recommandée : 1280×720
-
 - format BGR (OpenCV) converti en RGB uniquement si nécessaire (Pillow / MediaPipe)
 
-Affichage minimaliste
-
-fenêtre plein écran “Camera” pendant IDLE / capture
-
-fenêtre plein écran “Preview” pendant PREVIEW_X
-
-fenêtre plein écran “Result” pendant DISPLAY_RESULT
-
-Le seul “feedback” est le changement de mode d’affichage (caméra vs preview vs résultat).
+Affichage minimaliste  
+- fenêtre plein écran “Camera” pendant IDLE / capture  
+- fenêtre plein écran “Preview” pendant PREVIEW_X  
+- fenêtre plein écran “Result” pendant DISPLAY_RESULT  
+- Le seul “feedback” est le changement de mode d’affichage (caméra vs preview vs résultat).  
 
 ### Pipeline IA (vue globale)
 
@@ -394,68 +376,35 @@ Tous les paramètres (taille, marges) doivent être configurables.
 
 ## Logs & traçabilité
 
-Chaque session doit écrire un metadata.json contenant :
-
-timestamp session
-
-histoire choisie (id + titre)
-
-chemins des images input/panel/final
-
-seed utilisée
-
-paramètres SDXL (steps, cfg, denoise, sampler, model)
-
-paramètres bulles (font, size, positions retenues)
-
-C’est indispensable pour :
-
-reproduire un bug
-
-comparer des réglages IA
-
-auditer la cohérence des sorties
+Chaque session doit écrire un metadata.json contenant :  
+- timestamp session  
+- histoire choisie (id + titre)  
+- chemins des images input/panel/final  
+- seed utilisée  
+- paramètres SDXL (steps, cfg, denoise, sampler, model)  
+- paramètres bulles (font, size, positions retenues)  
+ 
+C’est indispensable pour :  
+- reproduire un bug  
+- comparer des réglages IA  
+- auditer la cohérence des sorties  
 
 ### Process séparés
 
-Le projet tourne idéalement avec 2 terminaux/process :
+Le projet tourne idéalement avec 2 terminaux/process :  
 
-Terminal 1 — Stable Diffusion WebUI (Automatic1111)
+Terminal 1 — Stable Diffusion WebUI (Automatic1111)  
+- lance le serveur API sur 127.0.0.1:7860  
+- charge SDXL + ControlNet  
 
-lance le serveur API sur 127.0.0.1:7860
+Terminal 2 — PhotoBooth Story  
+- lance python photobooth_story.py  
+- capture webcam + contrôle gestes + appels API  
 
-charge SDXL + ControlNet
-
-Terminal 2 — PhotoBooth Story
-
-lance python photobooth_story.py
-
-capture webcam + contrôle gestes + appels API
-
-Cette séparation facilite :
-
-la stabilité
-
-la relance en cas de crash
-
-le debug
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Cette séparation facilite :  
+- la stabilité  
+- la relance en cas de crash  
+- le debug  
 
 
 
