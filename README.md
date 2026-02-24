@@ -4,11 +4,11 @@
 - estimation du temps que ça doit prendre
 - explication des choxi (IA, programmes)
 
-# 🎨 Photo Booth IA - MDM 2025
+#  Photo Booth IA - MDM 2025
 
 Photo booth intelligent avec génération d'images par IA utilisant Stable Diffusion XL et détection de gestes en temps réel.
 
-## 📋 Description
+##  Description
 
 Ce projet crée un photobooth interactif qui :
 - 📸 Capture des photos via webcam avec détection de gestes (signe V ✌️, pouce levé 👍)
@@ -24,7 +24,7 @@ Ce projet crée un photobooth interactif qui :
 
 ---
 
-## 🔧 Prérequis matériel
+##  Prérequis matériel
 
 | Composant | Spécification |
 |-----------|--------------|
@@ -35,7 +35,7 @@ Ce projet crée un photobooth interactif qui :
 | **RAM** | 16 GB minimum (32 GB recommandé pour SDXL) |
 
 
-## 🔧 Dépendances de Stable Diffusion WebUI :
+##  Dépendances de Stable Diffusion WebUI :
 
 PyTorch 2.5.1 + CUDA 12.1 ✅
 
@@ -49,7 +49,7 @@ MediaPipe 0.10.21 (détection gestes) ✅
 
 ONNX Runtime GPU 1.17.1 (inference) ✅
 
-## 🔧 Dépendances du Photo Booth  :
+##  Dépendances du Photo Booth  :
 
 OpenCV 4.11.0 ✅
 
@@ -335,7 +335,7 @@ Partagés (système):
 
 ```
 
-### ⚠️ IMPORTANT : Python 3.10 OBLIGATOIRE pour WebUi
+###  IMPORTANT : Python 3.10 OBLIGATOIRE pour WebUi
 
 Stable Diffusion WebUI nécessite **Python 3.10.x** (pas 3.11, 3.12 ou supérieur) [web:1][web:8].
 
@@ -347,7 +347,7 @@ sudo apt update
 sudo apt install python3.10 python3.10-venv python3.10-dev
 ```
 
-# IHR - photobooth ajout d'une fonctionnalité
+### IHR - photobooth ajout d'une fonctionnalité
 
 Projet pédagogique visant à créer une nouvelle fonctionnalité pour le photobooth en expliquant la nouvelle fonctionnalité **en détail**.
 
