@@ -103,386 +103,384 @@ Le photobooth produit au minimum :
 ---
 
 
+# Architecture complète du système
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Version d'origine du prof
-
-PhotoBooth interactif basé sur la détection de gestes qui capture **3 photos successives**, puis applique une génération IA cohérente afin de produire une **mini bande dessinée en 3 cases**.
-
-##  Description
-
-Ce projet crée un photobooth interactif qui :
-- 📸 Capture des photos via webcam avec détection de gestes (signe V ✌️, pouce levé 👍)
-- Génère des images stylisées **"Comic Book Ligne Claire"** via Stable Diffusion XL + ControlNet OpenPose
-- Applique automatiquement un logo transparent (template CPE)
--  Imprime les résultats sur imprimante HP Color LaserJet au format A6 glacé 🖨️
-
-### Style graphique
-- **Bande dessinée européenne** (ligne claire)
-- Traits nets et épurés, aplats de couleurs avec dégradés
-- Scènes futuristes avec interfaces holographiques cyan/orange
-- Arrière-plans technologiques complexes
+Cette section décrit **l’architecture complète** du PhotoBooth IA “Mode Histoire” (3 cases BD).
 
 ---
 
-##  Prérequis matériel
+## Couches du système
 
-| Composant | Spécification |
-|-----------|--------------|
-| **GPU** | NVIDIA avec CUDA (RTX 2060+ recommandé) |
-| **Webcam** | Résolution 720p minimum |
-| **Écran** | 3840×1080 (dual monitor) recommandé |
-| **Imprimante** | HP Color LaserJet 5700 + papier A6 glacé 200g |
-| **RAM** | 16 GB minimum (32 GB recommandé pour SDXL) |
+### Couche matérielle
+| Composant | Recommandation |
+|---|---|
+| **GPU** | NVIDIA CUDA (RTX 2060+ recommandé pour SDXL) |
+| **Webcam** | 720p minimum (1080p recommandé), 30 FPS |
+| **CPU** | 6 cœurs minimum (détection gestes + I/O) |
+| **RAM** | 16 GB min, 32 GB recommandé |
+| **Écran** | 1920×1080 min |
+| **Imprimante** | compatible CUPS / pilote système |
 
+### Système d’exploitation
+- Linux (Ubuntu/Debian recommandé) ou Windows
+- Drivers webcam (V4L2 sous Linux)
+- Drivers GPU NVIDIA + CUDA
+- CUPS pour l’impression sous Linux
 
-##  Dépendances de Stable Diffusion WebUI :
-
-PyTorch 2.5.1 + CUDA 12.1 ✅
-
-xFormers 0.0.23 pour optimisations ✅
-
-Diffusers 0.31.0 (SDXL) ✅
-
-ControlNet Aux 0.0.10 (OpenPose) ✅
-
-MediaPipe 0.10.21 (détection gestes) ✅
-
-ONNX Runtime GPU 1.17.1 (inference) ✅
-
-##  Dépendances du Photo Booth  :
-
-OpenCV 4.11.0 ✅
-
-MediaPipe 0.10.21 ✅
-
-NumPy 1.26.2 ✅
-
-Requests 2.32.5 ✅
+### Environnement logiciel
+- Python 3.10 (recommandé pour compatibilité stable côté SD WebUI)
+- Un environnement virtuel dédié (venv/conda)
+- Stable Diffusion WebUI (Automatic1111) lancé en **process séparé**
 
 ---
 
-## PHOTO BOOTH IA - ARCHITECTURE SYSTEME
+## Vue d’ensemble (diagramme)
 
 ```text
-
+================================================================================
+                          PHOTOBOOTH IA — MODE HISTOIRE
+================================================================================
 
 COUCHE MATERIELLE
 -----------------
-        Webcam USB          GPU NVIDIA          Imprimante HP
-        1280x720            CUDA/cuDNN          A6 Glossy
-            |                   |                   |
-            +-------------------+-------------------+
-                                |
-SYSTEME D'EXPLOITATION (Linux/Windows)
-Drivers: V4L2 (webcam), CUPS (imprimante), NVIDIA (GPU)
-                                |
-ENVIRONNEMENT PYTHON 3.10 (venv)
-PyTorch 2.x + CUDA + xFormers
-```
-
-
-## APPLICATION PHOTOBOOTH (photobooth.py)
-
-
-```text
-MODULE 1: CAPTURE & DETECTION
-------------------------------
-OpenCV           MediaPipe         Detection Gestes
-VideoCapture --> Hands Module -->  - Victory (V)
-1280x720         21 pts/main       - Thumbs Up
-30 FPS                             - Maintien 2 secondes
-                                          |
-                                          v
-MODULE 2: MACHINE A ETATS
--------------------------
-[waiting_victory] --(V 2s)--> [countdown] --(capture)--> [processing]
-       ^                                                       |
-       |                                                       v
-       +----------(V 2s)--------+                    [IA terminee]
-                                |                             |
-                         [ready_print] <---------------------+
-                                |
-                                +--(pouce 2s)--> [printing]
-
-MODULE 3: PREPARATION IMAGE
----------------------------
-Frame capturee (numpy array BGR 1280x720)
-    |
-    v
-Redimensionnement --> Encodage Base64 --> Sauvegarde _input.png + Logo CPE
-                                                |
-                                                v
-                                    HTTP POST Request (JSON)
-
-
-```
-## STABLE DIFFUSION WEBUI (Automatic1111)
-```text
-================================================================================
-                STABLE DIFFUSION WEBUI (Automatic1111)
-                    Port: 127.0.0.1:7860 - API REST
-================================================================================
-
-Endpoint: POST /sdapi/v1/img2img
-
-Payload JSON:
-{
-  "init_images": ["base64_image"],
-  "prompt": "comic book illustration...",
-  "negative_prompt": "photorealistic, blurry...",
-  "denoising_strength": 0.62,
-  "steps": 28,
-  "cfg_scale": 7.5,
-  "sampler_name": "DPM++ 2M Karras",
-  "width": 1280, "height": 720,
-  "batch_size": 1,
-  "n_iter": N_IMAGES,
-  "controlnet_units": [{
-    "model": "kohya_controllllite_xl_openpose_anime",
-    "module": "openpose_full",
-    "weight": 0.95,
-    "guidance_start": 0.0,
-    "guidance_end": 1.0
-  }]
-}
-
-PIPELINE DE GENERATION
+    Webcam USB                 GPU NVIDIA CUDA                       Imprimante
+  1280x720@30fps                SDXL VRAM 9-12GB                      A6/A5/A4
+        |                              |                                |
+        +------------------------------+--------------------------------+
+                                       |
+SYSTEME D'EXPLOITATION
 ----------------------
-ControlNet OpenPose --> SDXL UNet --> VAE Decoder --> Image 1280x720
-(detection squelette)   (28 steps)    (latent->img)
+Linux/Windows
+- Drivers webcam
+- Drivers NVIDIA
+- CUPS
 
-MODELES CHARGES EN VRAM GPU:
-- sd_xl_base_1.0.safetensors (6.9 GB)
-- kohya_controllllite_xl_openpose_anime (1.5 GB)
-- VAE SDXL (335 MB)
-TOTAL: ~9-12 GB VRAM
+ENV PYTHON 3.10 (venv)
+----------------------
+OpenCV + MediaPipe + NumPy + Requests + Pillow
+            |
+            v
+================================================================================
+                          APPLICATION PRINCIPALE (photobooth_story.py)
+================================================================================
+MODULE 1: CAPTURE CAMERA
+    OpenCV VideoCapture() -> frames -> affichage plein écran
 
-Response JSON:
-{
-  "images": [
-    "iVBORw0KGgoAAAANS...",  // Image IA #1
-    "9j/4AAQSkZJRgABA...",   // Image IA #2
-    ...
-  ]
-}
+MODULE 2: DETECTION GESTES
+    MediaPipe Hands -> classification geste (V / ThumbUp / ThumbDown)
+    + logique "maintien 2 secondes"
 
+MODULE 3: MACHINE A ETATS (3 PHOTOS)
+    IDLE -> CAPTURE_1 -> PREVIEW_1 -> CAPTURE_2 -> PREVIEW_2 -> CAPTURE_3 -> PREVIEW_3
+    puis PROCESSING -> DISPLAY_RESULT
 
+MODULE 4: GENERATION IA (SDXL img2img)
+    HTTP POST /sdapi/v1/img2img (Automatic1111)
+    3 requêtes (1 par panel) avec paramètres cohérents (seed, prompt, CN pose)
+
+MODULE 5: DETECTION PERSONNES (pour bulles)
+    MediaPipe Pose (et option Face) sur panel_X.png
+    -> zones "à éviter" (bounding boxes)
+
+MODULE 6: RENDU BULLES
+    Pillow : dessine bulles + texte (stories.json) placement adaptatif
+
+MODULE 7: COMPOSITION PLANCHE BD
+    Pillow : assemble 3 panels bubbled -> comic_final.png (+ pdf option)
 
 ================================================================================
-                   APPLICATION PHOTOBOOTH (Suite)
+                          STABLE DIFFUSION WEBUI (Automatic1111)
 ================================================================================
-
-MODULE 4: POST-TRAITEMENT
--------------------------
-Decodage Base64 --> Application Logo CPE --> Sauvegarde
-    (PNG)           (Overlay RGBA)           result_API_1111/
-                                             timestamp_IA1.png
-                                             timestamp_IA2.png
-
-MODULE 5: AFFICHAGE (OpenCV)
-----------------------------
-Ecran 3840x1080 (Dual Monitor)
-
-Fenetre 1: "Webcam" (1440x810)
-- Flux live 30 FPS
-- Overlay gestes (cercles + barres progression)
-- Messages etat systeme
-
-Fenetre 2: "Image StableDiffusion" (1440x1620)
-- Affiche derniere image IA
-- Mise a jour apres generation
-
-MODULE 6: IMPRESSION
---------------------
-Files d'impression:
-1. timestamp_input.png  <---- Photo originale + logo
-2. timestamp_IA1.png    <---- Variation IA #1 + logo
-3. timestamp_IA2.png    <---- Variation IA #2 + logo
-
-Commande CUPS:
-lp -d HP_Color_LaserJet_5700_USB
-   -o media=A6
-   -o InputSlot=Tray2
-   -o mediaType=HP-Brochure-Glossy-200g
-   -o orientation-requested=4
-   -o print-quality=5
-   image.png
-
-CUPS Daemon --> USB --> HP LaserJet --> Photos imprimees
-
-
-================================================================================
-                            FLUX DE DONNEES
-================================================================================
-
-Webcam --> photobooth.py --> Automatic1111 --> photobooth.py
-   |            |                  |                  |
-   |            |                  |                  |
-Frame BGR   JSON+Base64      Generation IA      Decode+Logo
-1280x720    POST /img2img    ~20-30 sec         Sauvegarde
-                             9-12 GB VRAM
-                                                Display + Print
-
-
-================================================================================
-                   COMMUNICATION INTER-PROCESSUS
-================================================================================
-
-TERMINAL 1                          TERMINAL 2
-bash launch_webui.sh                python photobooth.py
-
-+------------------------+          +------------------------+
-| Stable Diffusion WebUI |   HTTP   | Photo Booth Client     |
-| Flask Server           | <------> | requests.post()        |
-| Port 7860              |   REST   | Timeout: 180s          |
-+------------------------+          +------------------------+
-         |                                   |
-         v                                   v
-  PyTorch + CUDA                      OpenCV + MediaPipe
-  GPU 0                               CPU threads
-
-Process independant                 Process principal
-Python 3.10 (venv WebUI)            Python 3.10 (venv photobooth)
-Memoire: ~15 GB (modeles)           Memoire: ~500 MB
-VRAM: 9-12 GB                       VRAM: 0 GB
-
+Process séparé:
+- Port local 127.0.0.1:7860
+- API REST activée
+- SDXL + ControlNet OpenPose
 ```
 
-## TIMELINE D'UNE SESSION
+---
 
+## Machine à états (interaction gestuelle)
+
+L’application repose sur une machine à états claire, indispensable pour :  
+- guider la capture des 3 photos  
+- permettre “valider” ou “refaire”  
+- déclencher la génération IA uniquement quand tout est validé  
+- simplifier le debug et les logs  
+
+États:  
 ```text
+[IDLE]
+  |
+  | (V ✌️ maintenu 2s)
+  v
+[CAPTURE_1] -> [PREVIEW_1]
+                 |--(👍 2s)--> [CAPTURE_2] -> [PREVIEW_2]
+                 |--(👎 2s)--> [CAPTURE_1]
 
-t=0s      Utilisateur fait signe V
+[PREVIEW_2]
+  |--(👍 2s)--> [CAPTURE_3] -> [PREVIEW_3]
+  |--(👎 2s)--> [CAPTURE_2]
 
-t=0-2s    Maintien geste --> Barre progression jaune
+[PREVIEW_3]
+  |--(👍 2s)--> [PROCESSING] -> [DISPLAY_RESULT]
+  |--(👎 2s)--> [CAPTURE_3]
 
-t=2s      Validation --> Countdown "3-2-1"
-
-t=3s      Capture frame --> Flash bleu --> "PHOTO!"
-
-t=3s      Sauvegarde input.png + logo
-          Envoi requete HTTP POST --> Automatic1111
-
-t=3-33s   Generation IA (SDXL + ControlNet)
-          - OpenPose detection: ~1s
-          - Diffusion 28 steps: ~25s
-          - VAE decode: ~2s
-
-t=33s     Reception images Base64
-          Decodage + Application logo
-          Sauvegarde IA1.png, IA2.png...
-
-t=33s     Affichage fenetre StableDiffusion
-          Etat: "ready_print"
-
-t=33s+    Utilisateur decide:
-          - Pouce 2s --> Impression
-          - Signe V 2s --> Nouvelle photo
-
-[SI IMPRESSION]
-
-t=35-37s  Maintien pouce --> Validation
-
-t=37s     Envoi CUPS: input.png + IA1.png + IA2.png
-
-t=37-60s  Impression physique (~8s par page A6)
-
-t=60s     Etat: "waiting_victory" (pret nouvelle session)
+[DISPLAY_RESULT]
+  |--(👍 2s)--> retour [IDLE] (nouvelle session)
+  |--(👎 2s)--> reset complet -> [CAPTURE_1]
 
 ```
-## DEPENDANCES CLES
-```text
+---
 
-photobooth.py                    Automatic1111 WebUI
-+-- opencv-python 4.11.0.86      +-- torch 2.5.1+cu121
-+-- mediapipe 0.10.21            +-- diffusers 0.31.0
-+-- numpy 1.26.2                 +-- transformers 4.30.2
-+-- requests 2.32.5              +-- xformers 0.0.23.post1
-+-- Python 3.10.x                +-- accelerate 0.21.0
-                                 +-- safetensors 0.4.2
-                                 +-- controlnet_aux 0.0.10
-                                 +-- onnxruntime-gpu 1.17.1
+Principes d’implémentation
 
-Partagés (système):
-+-- CUDA Toolkit 12.1
-+-- cuDNN 9.1
-+-- NVIDIA Driver 525+
+Boucle principale à ~30 FPS (dépend webcam)
+
+À chaque frame :
+
+lire frame caméra
+
+détecter geste
+
+mettre à jour un timer de “maintien”
+
+valider geste si tenu ≥ 2s
+
+appliquer transition d’état
+
+Les états CAPTURE_X ne durent qu’une frame :
+
+capture instantanée
+
+écriture sur disque
+
+passage immédiat à PREVIEW_X
+
+✋ Détection de gestes (sans overlay)
+Dépendances
+
+mediapipe (Hands)
+
+opencv-python (capture caméra)
+
+numpy
+
+Gestes attendus
+
+✌️ Victory (index + majeur levés)
+
+👍 Thumb_Up
+
+👎 Thumb_Down
+
+Validation par maintien (~2 secondes)
+
+La détection brute varie frame-to-frame. On impose donc une règle :
+
+Un geste est “validé” si :
+
+il est détecté consécutivement pendant HOLD_TIME_SEC (ex: 2.0s)
+
+avec une tolérance d’erreur faible (ex: 2 frames max manquées)
+
+Pseudo-logique :
+
+si geste courant == geste précédent : incrémenter compteur
+
+sinon : reset compteur
+
+valider quand compteur >= HOLD_TIME_SEC * FPS_ESTIME
+
+Paramètres recommandés :
+
+HOLD_TIME_SEC = 2.0
+
+FPS_ESTIME = 30
+
+MAX_MISSED_FRAMES = 2
+
+📸 Capture & affichage
+Capture
+
+OpenCV VideoCapture(0)
+
+résolution recommandée : 1280×720
+
+format BGR (OpenCV) converti en RGB uniquement si nécessaire (Pillow / MediaPipe)
+
+Affichage minimaliste
+
+fenêtre plein écran “Camera” pendant IDLE / capture
+
+fenêtre plein écran “Preview” pendant PREVIEW_X
+
+fenêtre plein écran “Result” pendant DISPLAY_RESULT
+
+⚠️ Aucun overlay (pas de barres de progression ni d’icônes).
+Le seul “feedback” est le changement de mode d’affichage (caméra vs preview vs résultat).
+
+🧠 Pipeline IA (vue globale)
+
+Le module IA doit transformer chaque input_X.png en panel_X.png avec un style cohérent.
+
+Principe
+
+3 requêtes img2img (une par panel)
+
+paramètres identiques (prompt / negative prompt / sampler / steps / cfg)
+
+seed gérée pour cohérence (voir étape 3)
+
+ControlNet OpenPose pour conserver posture/structure
+
+Découplage recommandé
+
+L’application photobooth ne charge pas SDXL
+
+Elle appelle l’API d’Automatic1111 via HTTP :
+
+plus stable
+
+redémarrable
+
+logs séparés
+
+💬 Placement adaptatif des bulles (vue architecture)
+
+Après génération IA des panels, on ajoute des bulles en fonction des personnes présentes.
+
+Entrées
+
+panel_X.png (image IA)
+
+histoire choisie : stories.json (texte fixe)
+
+style bulles : bubble_style.yaml
+
+Étapes
+
+Détecter la/les personnes sur panel_X.png :
+
+MediaPipe Pose (option Face)
+
+Convertir landmarks -> bounding boxes “zones à éviter”
+
+Générer des rectangles de bulles (selon texte + police)
+
+Tester plusieurs positions candidates
+
+Choisir la meilleure (score minimum)
+
+Dessiner bulle + contour + queue + texte via Pillow
+
+Export : panel_X_bubbled.png
+
+🧷 Composition de la planche BD
+
+Le module “Composer” assemble les 3 panels “bubbled” dans une planche finale.
+
+Entrées
+
+panel_1_bubbled.png
+
+panel_2_bubbled.png
+
+panel_3_bubbled.png
+
+titre (depuis l’histoire choisie)
+
+Sorties
+
+comic_final.png
+
+optionnel : comic_final.pdf
+
+Layout recommandé (simple)
+
+3 panels alignés horizontalement (ou vertical selon imprimante)
+
+marges externes + gouttière entre cases
+
+titre en haut
+
+Tous les paramètres (taille, marges) doivent être configurables.
 
 
 
 
-## RESUME ARCHITECTURE SIMPLIFIEE
+
+## Logs & traçabilité (recommandé)
+
+Chaque session doit écrire un metadata.json contenant :
+
+timestamp session
+
+histoire choisie (id + titre)
+
+chemins des images input/panel/final
+
+seed utilisée
+
+paramètres SDXL (steps, cfg, denoise, sampler, model)
+
+paramètres bulles (font, size, positions retenues)
+
+C’est indispensable pour :
+
+reproduire un bug
+
+comparer des réglages IA
+
+auditer la cohérence des sorties
+
+🔌 Process séparés (recommandation forte)
+
+Le projet tourne idéalement avec 2 terminaux/process :
+
+Terminal 1 — Stable Diffusion WebUI (Automatic1111)
+
+lance le serveur API sur 127.0.0.1:7860
+
+charge SDXL + ControlNet
+
+Terminal 2 — PhotoBooth Story
+
+lance python photobooth_story.py
+
+capture webcam + contrôle gestes + appels API
+
+Cette séparation facilite :
+
+la stabilité
+
+la relance en cas de crash
+
+le debug
 
 
-[Webcam] --frame--> [photobooth.py]
-                         |
-                         | HTTP POST (Base64)
-                         v
-                    [Automatic1111]
-                         | Port 7860
-                         | SDXL + ControlNet
-                         | GPU: 9-12 GB VRAM
-                         v
-                    [photobooth.py]
-                         |
-                    +----+----+
-                    |         |
-                    v         v
-                [Ecran]  [Imprimante]
 
 
 
 
-```
 
-###  IMPORTANT : Python 3.10 OBLIGATOIRE pour WebUi
 
-Stable Diffusion WebUI nécessite **Python 3.10.x** (pas 3.11, 3.12 ou supérieur) [web:1][web:8].
 
-### Étape 1 : Installer Python 3.10
 
-#### Sur Ubuntu/Debian
-```bash
-sudo apt update
-sudo apt install python3.10 python3.10-venv python3.10-dev
-```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Résultat attendu
 ### Les photo prisent par le SAV
