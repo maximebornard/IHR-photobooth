@@ -483,21 +483,3 @@ Stable Diffusion WebUI nécessite **Python 3.10.x** (pas 3.11, 3.12 ou supérieu
 sudo apt update
 sudo apt install python3.10 python3.10-venv python3.10-dev
 ```
-
-# IHR - photobooth ajout d'une fonctionnalité
-
-Projet pédagogique visant à créer une nouvelle fonctionnalité pour le photobooth en expliquant la nouvelle fonctionnalité **en détail**.
-
-Ce projet démontre l’ensemble d’un workflow professionnel :
-
-* écriture de programmes pour cette nouvelle fonctionnalité
-* explication détaillée du projet du projet
-
----
-
-## Fonctionnalité
-
-Cette nouvelle fonctionnalité va permettre au SAV photobooth de prendre plusieurs photo et de lui faire **imaginer une histoire** via ces photo.
-De plus il devra **mettre un filtre** parmis ceux que nous ajouterons et mettra des **bulles de texte** pour renvoyer à la fin une image **style BD**.
-
-
