@@ -783,22 +783,13 @@ export(finalComposition, format="JPG", quality=100%)
 
 ---
 
-#  Conclusion
-
-L’étape 3 constitue :
-
-- Le moteur intelligent du projet
-- Le système d’interaction utilisateur
-- Le pipeline de traitement visuel
-- Le générateur narratif automatisé
-
-C’est la partie la plus technique et la plus stratégique du développement.
+#  Conclusion actuelle
 
 ---
 
-#  Étape suivante
+#  Perspective d'évolution
 
-Tests intensifs, optimisation des performances et préparation au déploiement.
+
 
 
 
