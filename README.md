@@ -398,7 +398,407 @@ Cette séparation facilite :
 - le debug  
 
 
+#  Étape 3 — Développement & Implémentation Technique
 
+---
+
+#  Objectif
+
+L’étape 3 correspond au cœur technique du projet.
+
+Elle consiste à développer l’ensemble des systèmes permettant :
+
+-  Capture intelligente de 3 photos
+-  Détection du geste "V"
+-  Détection du pouce levé
+-  Détection du visage
+-  Placement automatique des bulles
+-  Application automatique du meilleur filtre
+-  Génération d’une histoire cohérente (sans LLM)
+-  Composition et export final
+
+---
+
+#  1. Architecture Générale
+
+## 1.1 Organisation des modules
+
+Le projet est divisé en modules indépendants pour assurer :
+
+- Maintenabilité
+- Scalabilité
+- Clarté du code
+- Tests unitaires simplifiés
+
+```
+/camera
+    CameraManager
+    CaptureManager
+
+/gesture
+    GestureDetector
+    GestureStateMachine
+
+/face
+    FaceDetector
+    BubblePositionManager
+
+/ui
+    OverlayManager
+    CountdownManager
+    TextDisplayManager
+
+/story
+    StoryEngine
+    TemplateManager
+
+/filter
+    FilterManager
+
+/export
+    ImageComposer
+    ExportManager
+```
+
+---
+
+#  2. Détection des Gestes
+
+---
+
+## 2.1 Détection du geste en V
+
+### Objectif :
+Déclencher l’affichage du texte et le lancement du processus photo.
+
+### Processus :
+
+1. Analyse flux caméra en temps réel
+2. Détection des landmarks de la main
+3. Vérification configuration des doigts
+
+### Logique :
+
+```pseudo
+if indexFinger == extended
+AND middleFinger == extended
+AND ringFinger == folded
+AND pinky == folded
+THEN gesture = "V"
+```
+
+---
+
+## 2.2 Détection du pouce en l'air
+
+### Objectif :
+Valider ou rejeter la photo capturée.
+
+```pseudo
+if thumb == extended
+AND otherFingers == folded
+THEN gesture = "THUMBS_UP"
+```
+
+---
+
+## 2.3 Machine d’état
+
+Le système repose sur une machine d’état robuste :
+
+```
+WAITING_FOR_V
+    ↓
+TEXT_DISPLAYED
+    ↓
+COUNTDOWN_RUNNING
+    ↓
+PHOTO_CAPTURED
+    ↓
+WAITING_FOR_VALIDATION
+    ↓
+VALIDATED (photo conservée)
+or
+REJECTED (reprise)
+```
+
+---
+
+#  3. Détection du Visage
+
+---
+
+## 3.1 Détection Bounding Box
+
+```pseudo
+faceBoundingBox = detectFace(frame)
+faceCenterX = faceBoundingBox.centerX
+faceCenterY = faceBoundingBox.centerY
+```
+
+---
+
+## 3.2 Placement automatique des bulles
+
+### Règle principale :
+
+| Position visage | Position bulle |
+|----------------|----------------|
+| Haut gauche | Bas droite |
+| Haut droite | Bas gauche |
+| Bas gauche | Haut droite |
+| Bas droite | Haut gauche |
+| Centre | Zone libre dominante |
+
+---
+
+### Algorithme :
+
+```pseudo
+if faceCenterX < imageWidth/2 AND faceCenterY < imageHeight/2
+    bubblePosition = BOTTOM_RIGHT
+else if faceCenterX > imageWidth/2 AND faceCenterY < imageHeight/2
+    bubblePosition = BOTTOM_LEFT
+```
+
+---
+
+#  4. Génération de l’Histoire (Sans LLM)
+
+---
+
+## 4.1 Structure des templates
+
+Le système utilise des scénarios prédéfinis :
+
+```json
+{
+  "scenario_suspense": [
+    "Aujourd’hui tout semblait normal...",
+    "Puis quelque chose a attiré mon attention.",
+    "Et c’est là que tout a changé."
+  ],
+  "scenario_fun": [
+    "Je pensais que ce serait une journée tranquille.",
+    "Mais j’avais tort.",
+    "Et maintenant, je dois tout expliquer."
+  ]
+}
+```
+
+---
+
+## 4.2 Sélection aléatoire
+
+```pseudo
+selectedStory = random(storyTemplates)
+textPhoto1 = selectedStory[0]
+textPhoto2 = selectedStory[1]
+textPhoto3 = selectedStory[2]
+```
+
+---
+
+#  5. Affichage Texte & Compte à Rebours
+
+---
+
+## 5.1 Séquence complète
+
+1. Détection du signe en V
+2. Affichage texte (2–3 secondes)
+3. Lancement compte à rebours (5–10 secondes)
+4. Capture automatique
+
+---
+
+## 5.2 Compte à rebours visuel
+
+```pseudo
+startCountdown(5)
+
+display:
+5
+4
+3
+2
+1
+*capture*
+```
+
+---
+
+#  6. Capture & Validation
+
+---
+
+## 6.1 Capture
+
+```pseudo
+captureImage()
+storeTemporarily()
+```
+
+---
+
+## 6.2 Validation utilisateur
+
+```pseudo
+if gesture == THUMBS_UP
+    savePhoto()
+    moveToNext()
+else
+    discardPhoto()
+    restartCurrentPhoto()
+```
+
+---
+
+## 6.3 Boucle jusqu’à 3 photos validées
+
+```pseudo
+while validatedPhotos < 3
+    runPhotoSequence()
+```
+
+---
+
+#  7. Application Automatique des Filtres
+
+---
+
+## 7.1 Analyse de luminosité
+
+```pseudo
+brightness = analyzeBrightness(image)
+```
+
+---
+
+## 7.2 Sélection du filtre
+
+```pseudo
+if brightness < threshold
+    applyFilter("BrightBoost")
+else
+    applyFilter("CinematicWarm")
+```
+
+---
+
+## 7.3 Application
+
+Tous les filtres sont appliqués AVANT la composition finale.
+
+---
+
+#  8. Composition Finale (SAV)
+
+---
+
+## 8.1 Pipeline final
+
+Pour chaque photo :
+
+1. Application filtre
+2. Détection visage
+3. Placement bulle
+4. Injection texte
+5. Ajout à la composition
+
+---
+
+## 8.2 Algorithme global
+
+```pseudo
+for each photo in validatedPhotos:
+    filteredPhoto = applyFilter(photo)
+    faceData = detectFace(filteredPhoto)
+    bubblePosition = calculateBubblePosition(faceData)
+    bubble = generateBubble(bubblePosition)
+    composedPhoto = merge(filteredPhoto, bubble, text)
+    finalComposition.add(composedPhoto)
+```
+
+---
+
+## 8.3 Layout final possible
+
+### Option 1 : Style BD vertical
+- 3 images empilées
+
+### Option 2 : Story Instagram
+- 3 slides
+
+### Option 3 : Image unique 3 panneaux
+
+---
+
+#  9. Export
+
+---
+
+## 9.1 Formats supportés
+
+- JPG HD
+- PNG
+- PDF
+- MP4 animé
+
+---
+
+## 9.2 Export HD
+
+```pseudo
+export(finalComposition, format="JPG", quality=100%)
+```
+
+---
+
+#  10. Gestion des erreurs
+
+---
+
+## Cas gérés :
+
+-  Aucun visage détecté
+-  Mauvaise détection geste
+-  Luminosité insuffisante
+-  Timeout utilisateur
+-  Multi-visage non prévu
+
+---
+
+# Résultat Final
+
+À la fin de l’étape 3 :
+
+✔ L’utilisateur déclenche avec un signe V  
+✔ Texte s’affiche  
+✔ Compte à rebours démarre  
+✔ Photo prise  
+✔ Validation avec le pouce en l'air  
+✔ Répété 3 fois  
+✔ Histoire illustrée générée automatiquement  
+
+---
+
+#  Conclusion
+
+L’étape 3 constitue :
+
+- Le moteur intelligent du projet
+- Le système d’interaction utilisateur
+- Le pipeline de traitement visuel
+- Le générateur narratif automatisé
+
+C’est la partie la plus technique et la plus stratégique du développement.
+
+---
+
+#  Étape suivante
+
+Tests intensifs, optimisation des performances et préparation au déploiement.
 
 
 
