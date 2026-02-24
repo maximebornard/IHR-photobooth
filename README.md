@@ -256,7 +256,7 @@ capture instantanée
 
 passage immédiat à PREVIEW_X
 
-✋ Détection de gestes (sans overlay)
+### Détection de gestes 
 Dépendances
 
 mediapipe (Hands)
@@ -316,10 +316,9 @@ fenêtre plein écran “Preview” pendant PREVIEW_X
 
 fenêtre plein écran “Result” pendant DISPLAY_RESULT
 
-⚠️ Aucun overlay (pas de barres de progression ni d’icônes).
 Le seul “feedback” est le changement de mode d’affichage (caméra vs preview vs résultat).
 
-🧠 Pipeline IA (vue globale)
+### Pipeline IA (vue globale)
 
 Le module IA doit transformer chaque input_X.png en panel_X.png avec un style cohérent.
 
@@ -345,7 +344,7 @@ redémarrable
 
 logs séparés
 
-💬 Placement adaptatif des bulles (vue architecture)
+### Placement adaptatif des bulles (vue architecture)
 
 Après génération IA des panels, on ajoute des bulles en fonction des personnes présentes.
 
@@ -375,7 +374,7 @@ Dessiner bulle + contour + queue + texte via Pillow
 
 Export : panel_X_bubbled.png
 
-🧷 Composition de la planche BD
+### Composition de la planche BD
 
 Le module “Composer” assemble les 3 panels “bubbled” dans une planche finale.
 
@@ -409,7 +408,7 @@ Tous les paramètres (taille, marges) doivent être configurables.
 
 
 
-## Logs & traçabilité (recommandé)
+## Logs & traçabilité
 
 Chaque session doit écrire un metadata.json contenant :
 
@@ -433,7 +432,7 @@ comparer des réglages IA
 
 auditer la cohérence des sorties
 
-🔌 Process séparés (recommandation forte)
+### Process séparés
 
 Le projet tourne idéalement avec 2 terminaux/process :
 
