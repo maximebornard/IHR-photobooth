@@ -398,13 +398,13 @@ Cette séparation facilite :
 - le debug  
 
 
-#  Étape 3 — Développement & Implémentation Technique
+#  — Développement & Implémentation Technique
 
 ---
 
 #  Objectif
 
-L’étape 3 correspond au cœur technique du projet.
+Cette étape correspond au cœur technique du projet.
 
 Elle consiste à développer l’ensemble des systèmes permettant :
 
