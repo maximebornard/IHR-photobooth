@@ -232,81 +232,65 @@ L’application repose sur une machine à états claire, indispensable pour :
 ```
 ---
 
-Principes d’implémentation
+## Principes d’implémentation
 
-Boucle principale à ~30 FPS (dépend webcam)
+Boucle principale à ~30 FPS (dépend webcam)  
 
-À chaque frame :
+À chaque frame :  
+lire frame caméra  
 
-lire frame caméra
+détecter geste  
 
-détecter geste
+mettre à jour un timer de “maintien”  
 
-mettre à jour un timer de “maintien”
+valider geste si tenu ≥ 2s  
 
-valider geste si tenu ≥ 2s
+appliquer transition d’état  
 
-appliquer transition d’état
+Les états CAPTURE_X ne durent qu’une frame :  
 
-Les états CAPTURE_X ne durent qu’une frame :
+capture instantanée  
 
-capture instantanée
+écriture sur disque  
 
-écriture sur disque
-
-passage immédiat à PREVIEW_X
+passage immédiat à PREVIEW_X  
 
 ### Détection de gestes 
 Dépendances
+- mediapipe (Hands)  
+- opencv-python (capture caméra)  
+- numpy  
 
-mediapipe (Hands)
-
-opencv-python (capture caméra)
-
-numpy
-
-Gestes attendus
-
-✌️ Victory (index + majeur levés)
-
-👍 Thumb_Up
-
-👎 Thumb_Down
-
-Validation par maintien (~2 secondes)
+Validation par maintien (~2 secondes)  
 
 La détection brute varie frame-to-frame. On impose donc une règle :
 
 Un geste est “validé” si :
 
-il est détecté consécutivement pendant HOLD_TIME_SEC (ex: 2.0s)
-
-avec une tolérance d’erreur faible (ex: 2 frames max manquées)
+- il est détecté consécutivement pendant HOLD_TIME_SEC (ex: 2.0s)  
+- avec une tolérance d’erreur faible (ex: 2 frames max manquées)  
 
 Pseudo-logique :
 
-si geste courant == geste précédent : incrémenter compteur
-
-sinon : reset compteur
-
-valider quand compteur >= HOLD_TIME_SEC * FPS_ESTIME
+- si geste courant == geste précédent : incrémenter compteur
+- sinon : reset compteur
+- valider quand compteur >= HOLD_TIME_SEC * FPS_ESTIME
 
 Paramètres recommandés :
+- HOLD_TIME_SEC = 2.0
 
-HOLD_TIME_SEC = 2.0
+- FPS_ESTIME = 30
 
-FPS_ESTIME = 30
+- MAX_MISSED_FRAMES = 2
 
-MAX_MISSED_FRAMES = 2
-
-📸 Capture & affichage
+## Capture & affichage
 Capture
 
-OpenCV VideoCapture(0)
+- OpenCV VideoCapture(0)
 
-résolution recommandée : 1280×720
+- résolution recommandée : 1280×720
 
-format BGR (OpenCV) converti en RGB uniquement si nécessaire (Pillow / MediaPipe)
+- format BGR (OpenCV) converti en RGB uniquement si nécessaire (Pillow / MediaPipe)
 
 Affichage minimaliste
 
