@@ -2,7 +2,7 @@
 - finir le readme
 - parler de l'idée de faire une suité d'image puis que le SAV forme une histoire style bd de ces images (avec bulles de texte)
 - estimation du temps que ça doit prendre
-- explication des choxi (IA, programmes)
+- explication des choix (IA, programmes)
 
 #  Photo Booth IA - MDM 2025
 
@@ -347,16 +347,18 @@ sudo apt update
 sudo apt install python3.10 python3.10-venv python3.10-dev
 ```
 
-### IHR - photobooth ajout d'une fonctionnalité
+# IHR - photobooth ajout d'une fonctionnalité
 
 Projet pédagogique visant à créer une nouvelle fonctionnalité pour le photobooth en expliquant la nouvelle fonctionnalité **en détail**.
 
 Ce projet démontre l’ensemble d’un workflow professionnel :
 
-* récupération du SAV photobooth
 * écriture de programmes pour cette nouvelle fonctionnalité
 * explication détaillée du projet du projet
 
 ---
 
-# 
+## Fonctionnalité
+
+Cette nouvelle fonctionnalité va permettre au SAV photobooth de prendre plusieurs photo et de lui faire **imaginer une histoire** via ces photo.
+De plus il devra *mettre un filtre* parmis ceux que nous ajouterons et mettra des *bulles de texte* pour renvoyer à la fin une image **style BD**.
