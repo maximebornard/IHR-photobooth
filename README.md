@@ -1,8 +1,5 @@
 # TODO
-- finir le readme
-- parler de l'idée de faire une suité d'image puis que le SAV forme une histoire style bd de ces images (avec bulles de texte)
-- estimation du temps que ça doit prendre
-- explication des choix (IA, programmes)
+- Revérifier le tout (enlever ce qui se répète) et faire conclusion + perspective
 
 #  Photo Booth IA - Mode Histoire (Mini BD en 3 cases)
 
@@ -785,4 +782,3 @@ export(finalComposition, format="JPG", quality=100%)
 
 ### Exemple de ce que le SAV doit renvoyer
 <img width="400" height="400" alt="image_final" src="https://github.com/user-attachments/assets/2e951b0a-e5db-4479-b126-0dfc58e03814" />
-
