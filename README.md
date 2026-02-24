@@ -486,8 +486,8 @@ sudo apt install python3.10 python3.10-venv python3.10-dev
 
 # Résultat attendu
 ### Les photo prisent par le SAV
-<img width="400" height="400" alt="image1" src="https://github.com/user-attachments/assets/3cf57bd1-2696-4c26-afb2-bfad7aee3bad" />
-<img width="400" height="400" alt="image2" src="https://github.com/user-attachments/assets/bb63f815-e16f-46b4-a4d2-ef36b89ff7a3" />
+<img width="183" height="275" alt="image1" src="https://github.com/user-attachments/assets/3cf57bd1-2696-4c26-afb2-bfad7aee3bad" />
+<img width="183" height="275" alt="image2" src="https://github.com/user-attachments/assets/bb63f815-e16f-46b4-a4d2-ef36b89ff7a3" />
 <img width="183" height="275" alt="image3" src="https://github.com/user-attachments/assets/a0178629-9200-4716-adc4-1eac74ea53e0" />
 
 ### Exemple de ce que le SAV doit renvoyer
