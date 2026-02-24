@@ -361,4 +361,6 @@ Ce projet démontre l’ensemble d’un workflow professionnel :
 ## Fonctionnalité
 
 Cette nouvelle fonctionnalité va permettre au SAV photobooth de prendre plusieurs photo et de lui faire **imaginer une histoire** via ces photo.
-De plus il devra *mettre un filtre* parmis ceux que nous ajouterons et mettra des *bulles de texte* pour renvoyer à la fin une image **style BD**.
+De plus il devra **mettre un filtre** parmis ceux que nous ajouterons et mettra des **bulles de texte** pour renvoyer à la fin une image **style BD**.
+
+
